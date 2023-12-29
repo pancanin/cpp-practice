@@ -40,6 +40,10 @@ void testIsValidSudokuInvalidRow();
 void testIsValidSudokuInvalidCol();
 void testIsValidSudokuInvalidCol2();
 
+// Ideas
+// 1. Think about the data types for the matrix values.
+// 2. Add checks for the input of N?
+// 3. Add checks if 'new' operator fails.
 int main()
 {
   testCountOneBits();
@@ -52,11 +56,18 @@ int main()
   size_t n = readN(std::cin);
   n *= n; // a 2x2 sudoku has 2^2 rows and cols
   MatrixValue** m = reserveMatrix(n);
+
+  if (!m) {
+    std::cout << "Failed to allocate matrix\n";
+    return -1;
+  }
+
   fillMatrix(std::cin, m, n);
 
   std::cout << (isValidSudokuSolution(m, n) ? "Sudoku is valid." : "Sudoku is invalid") << "\n";
 
   releaseMatrix(m, n);
+  return 0;
 }
 
 size_t readN(std::istream& in) {
@@ -66,10 +77,17 @@ size_t readN(std::istream& in) {
 }
 
 MatrixValue** reserveMatrix(size_t n) {
-  MatrixValue** matrix = new MatrixValue * [n];
+  MatrixValue** matrix = new (std::nothrow) MatrixValue * [n];
+
+  if (!matrix) {
+    return nullptr;
+  }
 
   for (size_t i = 0; i < n; i++) {
-    matrix[i] = new MatrixValue[n];
+    matrix[i] = new (std::nothrow) MatrixValue[n];
+    if (!matrix[i]) {
+      return nullptr;
+    }
   }
 
   return matrix;
