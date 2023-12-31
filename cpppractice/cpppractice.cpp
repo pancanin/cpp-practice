@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <sstream>
 
-typedef unsigned int MatrixValue;
+typedef unsigned short MatrixValue;
 typedef unsigned int BitSet;
 
 // Note: Many functions accept 'n' as the size of the sudoku board.
@@ -40,10 +40,6 @@ void testIsValidSudokuInvalidRow();
 void testIsValidSudokuInvalidCol();
 void testIsValidSudokuInvalidCol2();
 
-// Ideas
-// 1. Think about the data types for the matrix values.
-// 2. Add checks for the input of N?
-// 3. Add checks if 'new' operator fails.
 int main()
 {
   testCountOneBits();
