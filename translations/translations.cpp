@@ -3,17 +3,15 @@
 
 // Used only for testing
 #include <assert.h>
-
-typedef const char* String;
-typedef String* StringArray;
+#include <sstream>
 
 const size_t growthFactor = 2;
 const size_t initialCapacity = 8;
 
-template<typename T>
+template<typename T, size_t Capacity = initialCapacity, bool isFixed = false>
 struct Array {
-  Array() : size(0), buffer(nullptr), capacity(initialCapacity) {}
-  ~Array() {
+  Array() : size(0), buffer(nullptr), capacity(Capacity) {}
+  void destroy() {
     delete[] buffer;
   }
   bool init() {
@@ -22,7 +20,7 @@ struct Array {
   }
   bool push_back(T item) {
     if (size >= capacity) {
-      if (!resize()) { return false; }
+      if (!resize() || isFixed) { return false; }
     }
     buffer[size++] = item;
     return true;
@@ -49,6 +47,9 @@ private:
   }
 };
 
+typedef Array<char> String;
+typedef Array<String> Strings;
+
 void testDynamicArray() {
   Array<int> arr;
   arr.init();
@@ -62,35 +63,43 @@ void testDynamicArray() {
   }
 }
 
-void testDynamicArrayWithStringArrays() {
-  Array<StringArray> arr;
-  arr.init();
-
-  String word1[] = { "smqh", "laughter" };
-  String word2[] = { "maitap", "joke" };
-  String word3[] = { "dete", "child" };
-
-  StringArray a = word1;
-  StringArray b = word2;
-  StringArray c = word3;
-
-  arr.push_back(a);
-  arr.push_back(b);
-  arr.push_back(c);
-
-  assert(arr.buffer[0][0] == "smqh");
-  assert(arr.buffer[0][1] == "laughter");
-  assert(arr.buffer[1][0] == "maitap");
-  assert(arr.buffer[1][1] == "joke");
-  assert(arr.buffer[2][0] == "dete");
-  assert(arr.buffer[2][1] == "child");
+Array<Array<Array<char>>> readDictionary(std::istream& in) {
+  char c;
+  Array<Strings> dictionary;
+  dictionary.init();
+  Strings dictEntry;
+  dictEntry.init();
+  String word;
+  word.init();
+  while (in >> c) { // This ignores spaces... so the below check does not work...
+    if (c == ' ') {
+      word.push_back('\0');
+      dictEntry.push_back(word);
+      if (dictEntry.size == 2) {
+        dictionary.push_back(dictEntry);
+        dictEntry = Strings();
+        dictEntry.init();
+      }
+      word = String();
+      word.init();
+    }
+    else {
+      word.push_back(c);
+    }
+  }
+  return dictionary;
 }
 
-static StringArray* buffer = nullptr;
+void testReadDictionary() {
+  std::istringstream ss("igraq play ucha study");
+  Array<Strings> dict = readDictionary(ss);
+
+  assert(dict.buffer[0].buffer[0].buffer[0], "i");
+}
 
 int main()
 {
   testDynamicArray();
-  testDynamicArrayWithStringArrays();
+  testReadDictionary();
   std::cout << "Hello World!\n";
 }
